@@ -30,6 +30,7 @@ fn main() {
         args.author
     );
 
+    // TODO: Save in hash
     let mut _changes_per_month: HashMap<String, u32> = HashMap::new();
 
     // TODO: Be more functional
@@ -41,16 +42,15 @@ fn main() {
 
         // TODO: Use chrono to parse the date
         let hash_date: Vec<&str> = lines[0].split('|').collect();
-        print!("{:?}", hash_date);
+        println!("{:?}", hash_date);
 
-        // TODO: Be more functional
-        for line in &lines[1..] {
-            // numstat output format is expected to be: \d+\t\d+\t<filename>
+        let addition_deletion: (i32, i32) = lines[1..].iter().fold((0, 0), |acc, line| {
             let stats: Vec<&str> = line.split_whitespace().collect();
-            let addition = stats[0].parse::<u32>().unwrap_or(0);
-            let deletion = stats[1].parse::<u32>().unwrap_or(0);
+            let addition = stats[0].parse::<i32>().unwrap_or(0);
+            let deletion = stats[1].parse::<i32>().unwrap_or(0);
 
-            println!("{:?} {}: {}", addition, deletion, addition - deletion);
-        }
+            (acc.0 + addition, acc.1 + deletion)
+        });
+        println!("addition_deletion {:?}", addition_deletion);
     }
 }
