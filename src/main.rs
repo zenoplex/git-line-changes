@@ -35,13 +35,20 @@ fn main() {
     // TODO: Be more functional
     for commit in commits {
         let lines: Vec<&str> = commit.lines().collect();
-        // println!("lines: {:?}", lines);
+        if lines.is_empty() {
+            continue;
+        }
+
+        // TODO: Use chrono to parse the date
+        let hash_date: Vec<&str> = lines[0].split('|').collect();
+        print!("{:?}", hash_date);
 
         // TODO: Be more functional
         for line in &lines[1..] {
+            // numstat output format is expected to be: \d+\t\d+\t<filename>
             let stats: Vec<&str> = line.split_whitespace().collect();
-            let addition = stats[0].parse::<u8>().unwrap_or(0);
-            let deletion = stats[1].parse::<u8>().unwrap_or(0);
+            let addition = stats[0].parse::<u32>().unwrap_or(0);
+            let deletion = stats[1].parse::<u32>().unwrap_or(0);
 
             println!("{:?} {}: {}", addition, deletion, addition - deletion);
         }
