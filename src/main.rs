@@ -1,4 +1,4 @@
-use std::process::Command;
+use std::{collections::HashMap, process::Command};
 
 use clap::Parser;
 
@@ -12,9 +12,9 @@ struct Args {
 
 fn main() {
     let args = Args::parse();
-    let output = Command::new("git")
+    let log = Command::new("git")
         .arg("log")
-        // .arg("--numstat")
+        .arg("--numstat")
         // Format the output to be easily parsable
         // https://git-scm.com/docs/pretty-formats
         .arg("--pretty=format:%h|%aI")
@@ -22,8 +22,28 @@ fn main() {
         .output()
         .expect("Failed to execute git log command");
 
+    let output = String::from_utf8(log.stdout).expect("Invalid UTF-8");
+    let commits = output.split("\n\n").collect::<Vec<&str>>();
     println!(
-        "{:?}",
-        String::from_utf8(output.stdout).expect("Invalid UTF-8")
+        "Found total of {} commits by {}",
+        commits.len(),
+        args.author
     );
+
+    let mut _changes_per_month: HashMap<String, u32> = HashMap::new();
+
+    // TODO: Be more functional
+    for commit in commits {
+        let lines: Vec<&str> = commit.lines().collect();
+        // println!("lines: {:?}", lines);
+
+        // TODO: Be more functional
+        for line in &lines[1..] {
+            let stats: Vec<&str> = line.split_whitespace().collect();
+            let addition = stats[0].parse::<u8>().unwrap_or(0);
+            let deletion = stats[1].parse::<u8>().unwrap_or(0);
+
+            println!("{:?} {}: {}", addition, deletion, addition - deletion);
+        }
+    }
 }
