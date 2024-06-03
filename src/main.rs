@@ -27,14 +27,14 @@ fn main() {
     let commits = output.split("\n\n").collect::<Vec<&str>>();
     println!(
         "Found total of {} commits by {}",
-        commits.len(),
-        args.author
+        &commits.len(),
+        &args.author
     );
 
     let mut parsed_commits: Vec<(&str, NaiveDate, (i32, i32))> = Vec::new();
 
     // TODO: Be more functional
-    for commit in commits {
+    for commit in &commits {
         let lines: Vec<&str> = commit.lines().collect();
         if lines.is_empty() {
             continue;
@@ -86,6 +86,7 @@ fn last_day_of_month(year: i32, month: u32) -> NaiveDate {
     date.pred_opt().unwrap()
 }
 
+// TODO: Needs tests
 /**
  * Group the commits by year
  */
