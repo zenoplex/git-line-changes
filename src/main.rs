@@ -1,6 +1,6 @@
-use std::process::Command;
+use std::{collections::HashMap, process::Command};
 
-use chrono::NaiveDate;
+use chrono::{Datelike, NaiveDate};
 use clap::Parser;
 
 #[derive(Parser, Debug)]
@@ -64,5 +64,31 @@ fn main() {
         parsed_commits.push((hash, date, addition_deletion));
     }
 
-    println!("{:?}", parsed_commits);
+    // println!("{:?}", parsed_commits);
+
+    println!("{:?}", group_by_year(parsed_commits));
+}
+
+/**
+ * Get the last day of the year
+ */
+fn last_day_of_year(year: i32) -> NaiveDate {
+    let date = NaiveDate::from_ymd_opt(year + 1, 1, 1).expect("Failed to create Date");
+    date.pred_opt().unwrap()
+}
+
+/**
+ * Group the commits by year
+ */
+fn group_by_year(data: Vec<(&str, NaiveDate, (i32, i32))>) -> HashMap<NaiveDate, (i32, i32)> {
+    let mut grouped_data: HashMap<NaiveDate, (i32, i32)> = HashMap::new();
+
+    for (_, date, (addition, deletion)) in data {
+        let year = date.year();
+        let entry = grouped_data.entry(last_day_of_year(year)).or_insert((0, 0));
+        entry.0 += addition;
+        entry.1 += deletion;
+    }
+
+    grouped_data
 }
