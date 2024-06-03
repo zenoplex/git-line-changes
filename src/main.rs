@@ -1,5 +1,6 @@
 use std::{collections::HashMap, process::Command};
 
+use chrono::NaiveDate;
 use clap::Parser;
 
 #[derive(Parser, Debug)]
@@ -30,8 +31,7 @@ fn main() {
         args.author
     );
 
-    // TODO: Save in hash
-    let mut _changes_per_month: HashMap<String, u32> = HashMap::new();
+    let mut commit_map: HashMap<&str, (NaiveDate, (i32, i32))> = HashMap::new();
 
     // TODO: Be more functional
     for commit in commits {
@@ -40,9 +40,16 @@ fn main() {
             continue;
         }
 
-        // TODO: Use chrono to parse the date
         let hash_date: Vec<&str> = lines[0].split('|').collect();
-        println!("{:?}", hash_date);
+        let hash = hash_date[0];
+        let commit_date = NaiveDate::parse_from_str(hash_date[1], "%Y-%m-%dT%H:%M:%S%z");
+        if commit_date.is_err() {
+            println!("Error parsing date: {:?}", hash_date);
+            continue;
+        }
+        let date = commit_date.unwrap();
+
+        // println!("{:?} commit_date: {}", hash_date, date);
 
         let addition_deletion: (i32, i32) = lines[1..].iter().fold((0, 0), |acc, line| {
             let stats: Vec<&str> = line.split_whitespace().collect();
@@ -51,6 +58,10 @@ fn main() {
 
             (acc.0 + addition, acc.1 + deletion)
         });
-        println!("addition_deletion {:?}", addition_deletion);
+        // println!("addition_deletion {:?}", addition_deletion);
+
+        commit_map.insert(hash, (date, addition_deletion));
     }
+
+    println!("{:?}", commit_map);
 }
