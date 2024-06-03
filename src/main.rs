@@ -1,7 +1,7 @@
-use std::{collections::HashMap, process::Command};
-
 use chrono::{Datelike, NaiveDate};
 use clap::Parser;
+use std::io::{stdout, Write};
+use std::{collections::HashMap, process::Command};
 
 #[derive(Parser, Debug)]
 #[command(version, about, long_about = None)]
@@ -9,9 +9,16 @@ struct Args {
     /// Name of the person to log
     #[arg(short, long)]
     author: String,
+
+    /// Show verbose output
+    #[arg(short, long)]
+    verbose: bool,
 }
 
 fn main() {
+    let stdout = stdout();
+    let mut handle = stdout.lock();
+
     let args = Args::parse();
     let log = Command::new("git")
         .arg("log")
@@ -25,15 +32,17 @@ fn main() {
 
     let output = String::from_utf8(log.stdout).expect("Invalid UTF-8");
     let commits = output.split("\n\n").collect::<Vec<&str>>();
-    println!(
+
+    writeln!(
+        handle,
         "Found total of {} commits by {}",
         &commits.len(),
         &args.author
-    );
+    )
+    .unwrap_or(());
 
     let mut parsed_commits: Vec<(&str, NaiveDate, (i32, i32))> = Vec::new();
 
-    // TODO: Be more functional
     for commit in &commits {
         let lines: Vec<&str> = commit.lines().collect();
         if lines.is_empty() {
@@ -51,8 +60,6 @@ fn main() {
             }
         };
 
-        // println!("{:?} commit_date: {}", hash_date, date);
-
         let addition_deletion: (i32, i32) = lines[1..].iter().fold((0, 0), |acc, line| {
             let stats: Vec<&str> = line.split_whitespace().collect();
             let addition = stats[0].parse::<i32>().unwrap_or(0);
@@ -60,11 +67,13 @@ fn main() {
 
             (acc.0 + addition, acc.1 + deletion)
         });
-        // println!("addition_deletion {:?}", addition_deletion);
+
         parsed_commits.push((hash, date, addition_deletion));
     }
 
-    // println!("{:?}", parsed_commits);
+    if args.verbose {
+        writeln!(handle, "{:?}", parsed_commits).unwrap_or(());
+    }
 
     println!("year {:?}", group_by_year(&parsed_commits));
     println!("month {:?}", group_by_month(&parsed_commits));
