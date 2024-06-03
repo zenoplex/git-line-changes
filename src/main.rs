@@ -1,4 +1,4 @@
-use std::{collections::HashMap, process::Command};
+use std::process::Command;
 
 use chrono::NaiveDate;
 use clap::Parser;
@@ -31,7 +31,7 @@ fn main() {
         args.author
     );
 
-    let mut commit_map: HashMap<&str, (NaiveDate, (i32, i32))> = HashMap::new();
+    let mut parsed_commits: Vec<(&str, NaiveDate, (i32, i32))> = Vec::new();
 
     // TODO: Be more functional
     for commit in commits {
@@ -43,11 +43,13 @@ fn main() {
         let hash_date: Vec<&str> = lines[0].split('|').collect();
         let hash = hash_date[0];
         let commit_date = NaiveDate::parse_from_str(hash_date[1], "%Y-%m-%dT%H:%M:%S%z");
-        if commit_date.is_err() {
-            println!("Error parsing date: {:?}", hash_date);
-            continue;
-        }
-        let date = commit_date.unwrap();
+        let date = match commit_date {
+            Ok(date) => date,
+            Err(_) => {
+                println!("Error parsing date: {}", hash_date[1]);
+                continue;
+            }
+        };
 
         // println!("{:?} commit_date: {}", hash_date, date);
 
@@ -59,9 +61,8 @@ fn main() {
             (acc.0 + addition, acc.1 + deletion)
         });
         // println!("addition_deletion {:?}", addition_deletion);
-
-        commit_map.insert(hash, (date, addition_deletion));
+        parsed_commits.push((hash, date, addition_deletion));
     }
 
-    println!("{:?}", commit_map);
+    println!("{:?}", parsed_commits);
 }
