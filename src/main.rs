@@ -66,7 +66,8 @@ fn main() {
 
     // println!("{:?}", parsed_commits);
 
-    println!("{:?}", group_by_year(parsed_commits));
+    println!("year {:?}", group_by_year(&parsed_commits));
+    println!("month {:?}", group_by_month(&parsed_commits));
 }
 
 /**
@@ -78,14 +79,41 @@ fn last_day_of_year(year: i32) -> NaiveDate {
 }
 
 /**
+ * Get the last day of the month
+ */
+fn last_day_of_month(year: i32, month: u32) -> NaiveDate {
+    let date = NaiveDate::from_ymd_opt(year, month + 1, 1).expect("Failed to create Date");
+    date.pred_opt().unwrap()
+}
+
+/**
  * Group the commits by year
  */
-fn group_by_year(data: Vec<(&str, NaiveDate, (i32, i32))>) -> HashMap<NaiveDate, (i32, i32)> {
+fn group_by_year(data: &[(&str, NaiveDate, (i32, i32))]) -> HashMap<NaiveDate, (i32, i32)> {
     let mut grouped_data: HashMap<NaiveDate, (i32, i32)> = HashMap::new();
 
     for (_, date, (addition, deletion)) in data {
         let year = date.year();
         let entry = grouped_data.entry(last_day_of_year(year)).or_insert((0, 0));
+        entry.0 += addition;
+        entry.1 += deletion;
+    }
+
+    grouped_data
+}
+
+/**
+ * Group the commits by month
+ */
+fn group_by_month(data: &[(&str, NaiveDate, (i32, i32))]) -> HashMap<NaiveDate, (i32, i32)> {
+    let mut grouped_data: HashMap<NaiveDate, (i32, i32)> = HashMap::new();
+
+    for (_, date, (addition, deletion)) in data {
+        let year = date.year();
+        let month = date.month();
+        let entry = grouped_data
+            .entry(last_day_of_month(year, month))
+            .or_insert((0, 0));
         entry.0 += addition;
         entry.1 += deletion;
     }
