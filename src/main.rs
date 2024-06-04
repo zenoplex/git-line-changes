@@ -1,3 +1,5 @@
+mod table;
+
 use chrono::{Datelike, NaiveDate};
 use clap::{Parser, ValueEnum};
 use std::io::{stdout, Write};
@@ -49,7 +51,7 @@ fn main() {
         &commits.len(),
         &args.author
     )
-    .unwrap_or(());
+    .unwrap();
 
     let mut parsed_commits: Vec<(&str, NaiveDate, (i32, i32))> = Vec::new();
 
@@ -82,7 +84,7 @@ fn main() {
     }
 
     if args.verbose {
-        writeln!(handle, "{:?}", parsed_commits).unwrap_or(());
+        writeln!(handle, "{:?}", parsed_commits).unwrap();
     }
 
     match args.group {
