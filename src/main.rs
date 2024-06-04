@@ -74,6 +74,12 @@ fn main() {
 
         let addition_deletion: (i32, i32) = lines[1..].iter().fold((0, 0), |acc, line| {
             let stats: Vec<&str> = line.split_whitespace().collect();
+
+            // TODO: Hotfix for invalid stats
+            if stats.len() < 2 {
+                return acc;
+            }
+
             let addition = stats[0].parse::<i32>().unwrap_or(0);
             let deletion = stats[1].parse::<i32>().unwrap_or(0);
 
