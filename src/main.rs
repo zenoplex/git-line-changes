@@ -1,7 +1,13 @@
 use chrono::{Datelike, NaiveDate};
-use clap::Parser;
+use clap::{Parser, ValueEnum};
 use std::io::{stdout, Write};
 use std::{collections::HashMap, process::Command};
+
+#[derive(Debug, Clone, ValueEnum)]
+enum GroupBy {
+    Year,
+    Month,
+}
 
 #[derive(Parser, Debug)]
 #[command(version, about, long_about = None)]
@@ -13,6 +19,10 @@ struct Args {
     /// Show verbose output
     #[arg(short, long)]
     verbose: bool,
+
+    /// Group commits by year and month
+    #[arg(short, long, default_value = "month")]
+    group: GroupBy,
 }
 
 fn main() {
@@ -75,8 +85,14 @@ fn main() {
         writeln!(handle, "{:?}", parsed_commits).unwrap_or(());
     }
 
-    println!("year {:?}", group_by_year(&parsed_commits));
-    println!("month {:?}", group_by_month(&parsed_commits));
+    match args.group {
+        GroupBy::Year => {
+            println!("year {:?}", group_by_year(&parsed_commits));
+        }
+        GroupBy::Month => {
+            println!("month {:?}", group_by_month(&parsed_commits));
+        }
+    }
 }
 
 /**
