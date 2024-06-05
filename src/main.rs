@@ -69,11 +69,19 @@ fn main() {
 
     let parser = LogParser::from(&commits);
 
+    let mut sum_addition = 0;
+    let mut sum_deletion = 0;
+    let mut sum_change_delta = 0;
+
     let rows = match args.group {
         GroupBy::Year => parser
             .group_by_year()
             .iter()
             .map(|(date, grouped_commit)| {
+                sum_addition += grouped_commit.get_addition();
+                sum_deletion += grouped_commit.get_deletion();
+                sum_change_delta += grouped_commit.get_change_delta();
+
                 vec![
                     date.format("%Y").to_string(),
                     grouped_commit.get_addition().to_string(),
@@ -86,6 +94,10 @@ fn main() {
             .group_by_month()
             .iter()
             .map(|(date, grouped_commit)| {
+                sum_addition += grouped_commit.get_addition();
+                sum_deletion += grouped_commit.get_deletion();
+                sum_change_delta += grouped_commit.get_change_delta();
+
                 vec![
                     date.format("%Y-%m").to_string(),
                     grouped_commit.get_addition().to_string(),
@@ -98,7 +110,7 @@ fn main() {
 
     writeln!(
         handle,
-        "Found total of {} commits by {}",
+        "Found total of {} commits by {}\n",
         &commits.len(),
         &args.author
     )
@@ -114,4 +126,11 @@ fn main() {
         rows,
     );
     table.render();
+
+    writeln!(
+        handle,
+        "sum {:?} {:?} {:?}",
+        sum_addition, sum_deletion, sum_change_delta,
+    )
+    .unwrap();
 }
