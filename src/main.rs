@@ -44,21 +44,25 @@ fn main() {
     let mut handle = stdout.lock();
 
     let args = Args::parse();
-    let log = Command::new("git")
-        .arg("log")
+    let mut log = Command::new("git");
+    log.arg("log")
         .arg("--numstat")
         .arg("--no-merges")
         // Format the output to be easily parsable
         // https://git-scm.com/docs/pretty-formats
         .arg("--pretty=format:%H|%aI")
-        .args(["--author", &args.author])
-        // .args(["--after", &args.after])
-        // .args(["--before", &args.before])
-        .output()
-        .expect("Failed to execute git log command");
+        .args(["--author", &args.author]);
 
-    let output = String::from_utf8(log.stdout).expect("Invalid UTF-8");
-    let commits = output.split("\n\n").collect::<Vec<&str>>();
+    if let Some(after) = &args.after {
+        log.args(["--after", after]);
+    }
+    if let Some(before) = &args.before {
+        log.args(["--before", before]);
+    }
+
+    let output = log.output().expect("Failed to execute git log command");
+    let stdout = String::from_utf8(output.stdout).expect("Invalid UTF-8");
+    let commits = stdout.split("\n\n").collect::<Vec<&str>>();
 
     writeln!(
         handle,
