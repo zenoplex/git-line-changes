@@ -8,6 +8,7 @@ pub struct Commit {
     // TODO: Try readonly crate
     addition: u32,
     deletion: u32,
+    change_delta: i32,
 }
 
 impl Commit {
@@ -17,6 +18,7 @@ impl Commit {
             date,
             addition,
             deletion,
+            change_delta: addition as i32 - deletion as i32,
         }
     }
 
@@ -32,11 +34,8 @@ impl Commit {
         self.deletion
     }
 
-    /**
-     * Get the calculated line changes of the commit
-     */
-    fn calc_line_changes(&self) -> i32 {
-        self.addition as i32 - self.deletion as i32
+    pub fn get_change_delta(&self) -> i32 {
+        self.change_delta
     }
 }
 
@@ -49,8 +48,24 @@ pub struct GroupedCommit {
 }
 
 impl GroupedCommit {
-    pub fn new() -> GroupedCommit {
-        Default::default()
+    pub fn new(commits: Vec<Commit>) -> GroupedCommit {
+        let (addition, deletion) =
+            &commits
+                .iter()
+                .fold((0, 0), |(acc_addition, acc_deletion), commit| {
+                    (
+                        acc_addition + commit.get_addition(),
+                        acc_deletion + commit.get_deletion(),
+                    )
+                });
+        let change_delta = *addition as i32 - *deletion as i32;
+
+        GroupedCommit {
+            commits,
+            addition: *addition,
+            deletion: *deletion,
+            change_delta,
+        }
     }
 
     pub fn get_addition(&self) -> u32 {
@@ -61,33 +76,10 @@ impl GroupedCommit {
         self.deletion
     }
 
-    /// Calculate the change delta of the grouped commits
-    fn calc_change_delta(&mut self) -> i32 {
-        let delta = self.addition as i32 - self.deletion as i32;
-        self.change_delta = delta;
+    pub fn add_commits(&mut self, commit: Commit) -> Self {
+        let mut commits = self.commits.clone();
+        commits.push(commit);
 
-        delta
-    }
-
-    /// Add addition count
-    pub fn add_addition(&mut self, addition: u32) -> u32 {
-        let added = self.addition + addition;
-        self.addition = added;
-        self.calc_change_delta();
-
-        added
-    }
-
-    /// Add deletion count
-    pub fn add_deletion(&mut self, deletion: u32) -> u32 {
-        let added = self.deletion + deletion;
-        self.deletion = added;
-        self.calc_change_delta();
-
-        added
-    }
-
-    pub fn add_commits(&mut self, commit: Commit) {
-        self.commits.push(commit);
+        GroupedCommit::new(commits)
     }
 }

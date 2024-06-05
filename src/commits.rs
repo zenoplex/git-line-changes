@@ -84,9 +84,8 @@ impl Commits {
             let date = commit.get_date();
             let year = date.year();
             let entry = grouped_data.entry(last_day_of_year(year)).or_default();
-            entry.add_commits(commit.clone());
-            entry.add_addition(commit.get_addition());
-            entry.add_deletion(commit.get_deletion());
+            let a = entry.add_commits(commit.clone());
+            grouped_data.insert(last_day_of_year(year), a);
         }
 
         let mut list: Vec<(NaiveDate, GroupedCommit)> = grouped_data.into_iter().collect();
@@ -106,9 +105,8 @@ impl Commits {
                 .entry(last_day_of_month(year, month))
                 .or_default();
 
-            entry.add_commits(commit.clone());
-            entry.add_addition(commit.get_addition());
-            entry.add_deletion(commit.get_deletion());
+            let a = entry.add_commits(commit.clone());
+            grouped_data.insert(last_day_of_month(year, month), a);
         }
 
         let mut list: Vec<(NaiveDate, GroupedCommit)> = grouped_data.into_iter().collect();
