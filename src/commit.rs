@@ -39,3 +39,55 @@ impl Commit {
         self.addition as i32 - self.deletion as i32
     }
 }
+
+#[derive(Debug, Default)]
+pub struct GroupedCommit {
+    commits: Vec<Commit>,
+    addition: u32,
+    deletion: u32,
+    change_delta: i32,
+}
+
+impl GroupedCommit {
+    pub fn new() -> GroupedCommit {
+        Default::default()
+    }
+
+    pub fn get_addition(&self) -> u32 {
+        self.addition
+    }
+
+    pub fn get_deletion(&self) -> u32 {
+        self.deletion
+    }
+
+    /// Calculate the change delta of the grouped commits
+    fn calc_change_delta(&mut self) -> i32 {
+        let delta = self.addition as i32 - self.deletion as i32;
+        self.change_delta = delta;
+
+        delta
+    }
+
+    /// Add addition count
+    pub fn add_addition(&mut self, addition: u32) -> u32 {
+        let added = self.addition + addition;
+        self.addition = added;
+        self.calc_change_delta();
+
+        added
+    }
+
+    /// Add deletion count
+    pub fn add_deletion(&mut self, deletion: u32) -> u32 {
+        let added = self.deletion + deletion;
+        self.deletion = added;
+        self.calc_change_delta();
+
+        added
+    }
+
+    pub fn add_commits(&mut self, commit: Commit) {
+        self.commits.push(commit);
+    }
+}
