@@ -67,15 +67,7 @@ fn main() {
     // should add custom separator for easier parsing
     let commits = stdout.split("\n\n").collect::<Vec<&str>>();
 
-    writeln!(
-        handle,
-        "Found total of {} commits by {}",
-        &commits.len(),
-        &args.author
-    )
-    .unwrap();
-
-    let parser = LogParser::from(commits);
+    let parser = LogParser::from(&commits);
 
     let rows = match args.group {
         GroupBy::Year => parser
@@ -103,6 +95,14 @@ fn main() {
             })
             .collect(),
     };
+
+    writeln!(
+        handle,
+        "Found total of {} commits by {}",
+        &commits.len(),
+        &args.author
+    )
+    .unwrap();
 
     let table = Table::new(
         vec![
