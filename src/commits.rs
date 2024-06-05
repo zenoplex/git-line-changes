@@ -2,7 +2,7 @@ use std::collections::HashMap;
 
 use chrono::{Datelike, NaiveDate};
 
-use crate::commit::Commit;
+use crate::commit::{Commit, GroupedCommit};
 use crate::utils::{last_day_of_month, last_day_of_year};
 
 // TODO: Needs tests
@@ -77,23 +77,26 @@ impl Commits {
     }
 
     /// Group the commits by year
-    pub fn group_by_year(&self) -> HashMap<NaiveDate, (u32, u32)> {
-        let mut grouped_data: HashMap<NaiveDate, (u32, u32)> = HashMap::new();
+    pub fn group_by_year(&self) -> Vec<(NaiveDate, GroupedCommit)> {
+        let mut grouped_data: HashMap<NaiveDate, GroupedCommit> = HashMap::new();
 
         for commit in &self.commits {
             let date = commit.get_date();
             let year = date.year();
-            let entry = grouped_data.entry(last_day_of_year(year)).or_insert((0, 0));
-            entry.0 += commit.get_addition();
-            entry.1 += commit.get_deletion();
+            let entry = grouped_data.entry(last_day_of_year(year)).or_default();
+            entry.add_commits(commit.clone());
+            entry.add_addition(commit.get_addition());
+            entry.add_deletion(commit.get_deletion());
         }
 
-        grouped_data
+        let mut list: Vec<(NaiveDate, GroupedCommit)> = grouped_data.into_iter().collect();
+        list.sort_by(|a, b| a.0.cmp(&b.0));
+        list
     }
 
     /// Group the commits by month
-    pub fn group_by_month(&self) -> HashMap<NaiveDate, (u32, u32)> {
-        let mut grouped_data: HashMap<NaiveDate, (u32, u32)> = HashMap::new();
+    pub fn group_by_month(&self) -> Vec<(NaiveDate, GroupedCommit)> {
+        let mut grouped_data: HashMap<NaiveDate, GroupedCommit> = HashMap::new();
 
         for commit in &self.commits {
             let date = commit.get_date();
@@ -101,11 +104,15 @@ impl Commits {
             let month = date.month();
             let entry = grouped_data
                 .entry(last_day_of_month(year, month))
-                .or_insert((0, 0));
-            entry.0 += commit.get_addition();
-            entry.1 += commit.get_deletion();
+                .or_default();
+
+            entry.add_commits(commit.clone());
+            entry.add_addition(commit.get_addition());
+            entry.add_deletion(commit.get_deletion());
         }
 
-        grouped_data
+        let mut list: Vec<(NaiveDate, GroupedCommit)> = grouped_data.into_iter().collect();
+        list.sort_by(|a, b| a.0.cmp(&b.0));
+        list
     }
 }
