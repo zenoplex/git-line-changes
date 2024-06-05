@@ -1,7 +1,9 @@
+mod commit;
 mod table;
 
 use chrono::{Datelike, NaiveDate};
 use clap::{Parser, ValueEnum};
+use commit::Commit;
 use std::io::{stdout, Write};
 use std::{collections::HashMap, process::Command};
 
@@ -37,7 +39,7 @@ fn main() {
         .arg("--numstat")
         // Format the output to be easily parsable
         // https://git-scm.com/docs/pretty-formats
-        .arg("--pretty=format:%h|%aI")
+        .arg("--pretty=format:%H|%aI")
         .args(["--author", &args.author])
         .output()
         .expect("Failed to execute git log command");
@@ -53,7 +55,7 @@ fn main() {
     )
     .unwrap();
 
-    let mut parsed_commits: Vec<(&str, NaiveDate, (i32, i32))> = Vec::new();
+    let mut parsed_commits: Vec<Commit> = Vec::new();
 
     for commit in &commits {
         let lines: Vec<&str> = commit.lines().collect();
@@ -72,7 +74,7 @@ fn main() {
             }
         };
 
-        let addition_deletion: (i32, i32) = lines[1..].iter().fold((0, 0), |acc, line| {
+        let addition_deletion: (u32, u32) = lines[1..].iter().fold((0, 0), |acc, line| {
             let stats: Vec<&str> = line.split_whitespace().collect();
 
             // TODO: Hotfix for invalid stats
@@ -80,13 +82,14 @@ fn main() {
                 return acc;
             }
 
-            let addition = stats[0].parse::<i32>().unwrap_or(0);
-            let deletion = stats[1].parse::<i32>().unwrap_or(0);
+            let addition = stats[0].parse::<u32>().unwrap_or(0);
+            let deletion = stats[1].parse::<u32>().unwrap_or(0);
 
             (acc.0 + addition, acc.1 + deletion)
         });
 
-        parsed_commits.push((hash, date, addition_deletion));
+        let commit = Commit::new(hash.into(), date, addition_deletion.0, addition_deletion.1);
+        parsed_commits.push(commit);
     }
 
     if args.verbose {
@@ -128,14 +131,15 @@ fn last_day_of_month(year: i32, month: u32) -> NaiveDate {
 /**
  * Group the commits by year
  */
-fn group_by_year(data: &[(&str, NaiveDate, (i32, i32))]) -> HashMap<NaiveDate, (i32, i32)> {
-    let mut grouped_data: HashMap<NaiveDate, (i32, i32)> = HashMap::new();
+fn group_by_year(data: &[Commit]) -> HashMap<NaiveDate, (u32, u32)> {
+    let mut grouped_data: HashMap<NaiveDate, (u32, u32)> = HashMap::new();
 
-    for (_, date, (addition, deletion)) in data {
+    for commit in data {
+        let date = commit.get_date();
         let year = date.year();
         let entry = grouped_data.entry(last_day_of_year(year)).or_insert((0, 0));
-        entry.0 += addition;
-        entry.1 += deletion;
+        entry.0 += commit.get_addition();
+        entry.1 += commit.get_deletion();
     }
 
     grouped_data
@@ -144,17 +148,18 @@ fn group_by_year(data: &[(&str, NaiveDate, (i32, i32))]) -> HashMap<NaiveDate, (
 /**
  * Group the commits by month
  */
-fn group_by_month(data: &[(&str, NaiveDate, (i32, i32))]) -> HashMap<NaiveDate, (i32, i32)> {
-    let mut grouped_data: HashMap<NaiveDate, (i32, i32)> = HashMap::new();
+fn group_by_month(data: &[Commit]) -> HashMap<NaiveDate, (u32, u32)> {
+    let mut grouped_data: HashMap<NaiveDate, (u32, u32)> = HashMap::new();
 
-    for (_, date, (addition, deletion)) in data {
+    for commit in data {
+        let date = commit.get_date();
         let year = date.year();
         let month = date.month();
         let entry = grouped_data
             .entry(last_day_of_month(year, month))
             .or_insert((0, 0));
-        entry.0 += addition;
-        entry.1 += deletion;
+        entry.0 += commit.get_addition();
+        entry.1 += commit.get_deletion();
     }
 
     grouped_data
