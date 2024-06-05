@@ -7,6 +7,7 @@ use crate::commits::Commits;
 use clap::Parser;
 use std::io::{stdout, Write};
 use std::process::Command;
+use table::Table;
 
 #[derive(Debug, Clone, clap::ValueEnum)]
 enum GroupBy {
@@ -69,12 +70,38 @@ fn main() {
 
     let parser = Commits::from(commits);
 
-    match args.group {
-        GroupBy::Year => {
-            println!("year {:?}", parser.group_by_year());
-        }
-        GroupBy::Month => {
-            println!("month {:?}", parser.group_by_month());
-        }
-    }
+    let rows = match args.group {
+        GroupBy::Year => parser
+            .group_by_year()
+            .iter()
+            .map(|(date, grouped_commit)| {
+                vec![
+                    date.format("%Y").to_string(),
+                    grouped_commit.get_addition().to_string(),
+                    grouped_commit.get_deletion().to_string(),
+                ]
+            })
+            .collect(),
+        GroupBy::Month => parser
+            .group_by_month()
+            .iter()
+            .map(|(date, grouped_commit)| {
+                vec![
+                    date.format("%Y-%m").to_string(),
+                    grouped_commit.get_addition().to_string(),
+                    grouped_commit.get_deletion().to_string(),
+                ]
+            })
+            .collect(),
+    };
+
+    let table = Table::new(
+        vec![
+            "Date".to_string(),
+            "Addition".to_string(),
+            "Deletion".to_string(),
+        ],
+        rows,
+    );
+    table.render();
 }
