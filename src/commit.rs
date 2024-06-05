@@ -49,22 +49,22 @@ pub struct GroupedCommit {
 
 impl GroupedCommit {
     pub fn new(commits: Vec<Commit>) -> GroupedCommit {
-        let (addition, deletion) =
-            &commits
-                .iter()
-                .fold((0, 0), |(acc_addition, acc_deletion), commit| {
-                    (
-                        acc_addition + commit.get_addition(),
-                        acc_deletion + commit.get_deletion(),
-                    )
-                });
-        let change_delta = *addition as i32 - *deletion as i32;
+        let (addition, deletion, change_delta) = &commits.iter().fold(
+            (0, 0, 0),
+            |(acc_addition, acc_deletion, acc_change_delta), commit| {
+                (
+                    acc_addition + commit.get_addition(),
+                    acc_deletion + commit.get_deletion(),
+                    acc_change_delta + commit.get_change_delta(),
+                )
+            },
+        );
 
         GroupedCommit {
             commits,
             addition: *addition,
             deletion: *deletion,
-            change_delta,
+            change_delta: *change_delta,
         }
     }
 
