@@ -1,13 +1,13 @@
 mod commit;
-mod commits;
+mod parser;
 mod table;
 mod utils;
 
-use crate::commits::Commits;
+use crate::parser::LogParser;
+use crate::table::Table;
 use clap::Parser;
 use std::io::{stdout, Write};
 use std::process::Command;
-use table::Table;
 
 #[derive(Debug, Clone, clap::ValueEnum)]
 enum GroupBy {
@@ -68,7 +68,7 @@ fn main() {
     )
     .unwrap();
 
-    let parser = Commits::from(commits);
+    let parser = LogParser::from(commits);
 
     let rows = match args.group {
         GroupBy::Year => parser

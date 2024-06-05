@@ -8,26 +8,26 @@ use crate::utils::{last_day_of_month, last_day_of_year};
 // TODO: Needs tests
 
 #[derive(Debug, Default)]
-pub struct Commits {
+pub struct LogParser {
     commits: Vec<Commit>,
 }
 
-impl From<Vec<&str>> for Commits {
+impl From<Vec<&str>> for LogParser {
     fn from(str: Vec<&str>) -> Self {
-        let parser = Commits::new();
+        let parser = LogParser::new();
         let commits = parser._parse(str);
-        Commits { commits }
+        LogParser { commits }
     }
 }
 
-impl Commits {
-    pub fn new() -> Commits {
-        Commits {
+impl LogParser {
+    pub fn new() -> LogParser {
+        LogParser {
             commits: Vec::new(),
         }
     }
 
-    /// Parse git log output
+    /// Parse git log output.
     /// git log needs to be outputted with the specific format.
     fn _parse(&self, orig_commits: Vec<&str>) -> Vec<Commit> {
         let mut commits: Vec<Commit> = Vec::new();
@@ -70,10 +70,11 @@ impl Commits {
         commits
     }
 
-    /// Parse the commits
+    /// Parse the commits and returns a new Commits struct
+    #[allow(dead_code)]
     pub fn parse(&self, orig_commits: Vec<&str>) -> Self {
         let commits = self._parse(orig_commits);
-        Commits { commits }
+        LogParser { commits }
     }
 
     /// Group the commits by year
