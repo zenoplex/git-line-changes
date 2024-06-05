@@ -79,6 +79,7 @@ fn main() {
                     date.format("%Y").to_string(),
                     grouped_commit.get_addition().to_string(),
                     grouped_commit.get_deletion().to_string(),
+                    grouped_commit.get_change_delta().to_string(),
                 ]
             })
             .collect(),
@@ -90,6 +91,7 @@ fn main() {
                     date.format("%Y-%m").to_string(),
                     grouped_commit.get_addition().to_string(),
                     grouped_commit.get_deletion().to_string(),
+                    grouped_commit.get_change_delta().to_string(),
                 ]
             })
             .collect(),
@@ -100,6 +102,7 @@ fn main() {
             "Date".to_string(),
             "Addition".to_string(),
             "Deletion".to_string(),
+            "Change Delta".to_string(),
         ],
         rows,
     );

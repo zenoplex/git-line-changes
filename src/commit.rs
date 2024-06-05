@@ -76,6 +76,10 @@ impl GroupedCommit {
         self.deletion
     }
 
+    pub fn get_change_delta(&self) -> i32 {
+        self.change_delta
+    }
+
     pub fn add_commits(&mut self, commit: Commit) -> Self {
         let mut commits = self.commits.clone();
         commits.push(commit);
