@@ -46,12 +46,7 @@ fn main() {
     let args = Args::parse();
     let mut log = Command::new("git");
     log.arg("log")
-        // Should use --shortstat if only lines of changes are needed
-        .arg("--numstat")
-        .arg("--no-merges")
-        // Format the output to be easily parsable
-        // https://git-scm.com/docs/pretty-formats
-        .arg("--pretty=format:%H|%aI")
+        .args(LogParser::GIT_LOG_ARGS)
         .args(["--author", &args.author]);
 
     if let Some(after) = &args.after {

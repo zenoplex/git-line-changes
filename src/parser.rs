@@ -21,6 +21,11 @@ impl From<&Vec<&str>> for LogParser {
 }
 
 impl LogParser {
+    // Format the output to be easily parsable
+    // https://git-scm.com/docs/pretty-formats
+    pub const GIT_LOG_ARGS: [&'static str; 3] =
+        ["--numstat", "--no-merges", "--pretty=format:%H|%aI"];
+
     pub fn new() -> LogParser {
         LogParser {
             commits: Vec::new(),
