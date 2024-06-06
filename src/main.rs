@@ -58,11 +58,11 @@ fn main() {
 
     let output = log.output().expect("Failed to execute git log command");
     let stdout = String::from_utf8(output.stdout).expect("Invalid UTF-8");
-    // FIXME: This is a hacky way to split the commits
-    // numstat can be empty with allow-empty commits
-    // should add custom separator for easier parsing
-    let commits = stdout.split("\n\n").collect::<Vec<&str>>();
-
+    // TODO: Should move this into LogParser struct
+    let commits = stdout
+        .split("<<COMMIT>>")
+        .map(|s| s.trim())
+        .collect::<Vec<&str>>();
     let parser = LogParser::from(&commits);
 
     let mut sum_addition = 0;

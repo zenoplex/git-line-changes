@@ -23,8 +23,13 @@ impl From<&Vec<&str>> for LogParser {
 impl LogParser {
     // Format the output to be easily parsable
     // https://git-scm.com/docs/pretty-formats
-    pub const GIT_LOG_ARGS: [&'static str; 3] =
-        ["--numstat", "--no-merges", "--pretty=format:%H|%aI"];
+    pub const GIT_LOG_ARGS: [&'static str; 3] = [
+        "--numstat",
+        "--no-merges",
+        // Adding <<COMMIT>> to separate commits since stats output can be empty which makes it hard to distinguish between commits.
+        // Separating commits with \n\n does not work in some cases (ie: allow-empty commits).
+        "--pretty=format:<<COMMIT>>|%H|%aI",
+    ];
 
     pub fn new() -> LogParser {
         LogParser {
@@ -43,7 +48,7 @@ impl LogParser {
                 continue;
             }
 
-            let hash_date: Vec<&str> = lines[0].split('|').collect();
+            let hash_date: Vec<&str> = lines[0].split('|').skip(1).collect();
             let hash = hash_date[0];
             let commit_date = NaiveDate::parse_from_str(hash_date[1], "%Y-%m-%dT%H:%M:%S%z");
             let date = match commit_date {
