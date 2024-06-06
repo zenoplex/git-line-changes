@@ -49,6 +49,7 @@ impl LogParser {
                 }
             };
 
+            // TODO: Rather than parsing output of --numstat, using output of --shortstat option would make below code simpler
             let addition_deletion: (u32, u32) = lines[1..].iter().fold((0, 0), |acc, line| {
                 let stats: Vec<&str> = line.split_whitespace().collect();
 

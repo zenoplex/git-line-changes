@@ -46,6 +46,7 @@ fn main() {
     let args = Args::parse();
     let mut log = Command::new("git");
     log.arg("log")
+        // Should use --shortstat if only lines of changes are needed
         .arg("--numstat")
         .arg("--no-merges")
         // Format the output to be easily parsable
