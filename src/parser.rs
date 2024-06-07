@@ -6,7 +6,8 @@ use regex::Regex;
 use crate::commit::{Commit, GroupedCommit};
 use crate::utils::{last_day_of_month, last_day_of_year};
 
-enum GroupBy {
+#[derive(Debug, Clone)]
+pub enum LogGroupBy {
     Year,
     Month,
 }
@@ -115,14 +116,14 @@ impl LogParser {
         &self.commits
     }
 
-    fn create_hash_key(&self, commit: &Commit, group: &GroupBy) -> NaiveDate {
+    fn create_hash_key(&self, commit: &Commit, group: &LogGroupBy) -> NaiveDate {
         match group {
-            GroupBy::Year => {
+            LogGroupBy::Year => {
                 let date = commit.get_date();
                 let year = date.year();
                 last_day_of_year(year)
             }
-            GroupBy::Month => {
+            LogGroupBy::Month => {
                 let date = commit.get_date();
                 let year = date.year();
                 let month = date.month();
@@ -131,13 +132,29 @@ impl LogParser {
         }
     }
 
+    /// Group the commits by the given group
+    pub fn group_by(&self, group: &LogGroupBy) -> Vec<(NaiveDate, GroupedCommit)> {
+        let mut grouped_data: HashMap<NaiveDate, GroupedCommit> = HashMap::new();
+
+        for commit in &self.commits {
+            let key = self.create_hash_key(commit, group);
+            let entry = grouped_data.entry(key).or_default();
+            let grouped_commit = entry.add_commits(commit.clone());
+            grouped_data.insert(key, grouped_commit);
+        }
+
+        let mut list: Vec<(NaiveDate, GroupedCommit)> = grouped_data.into_iter().collect();
+        list.sort_by(|a, b| a.0.cmp(&b.0));
+        list
+    }
+
     // TODO: Refactor group_by_year and group_by_month to use a single function
     /// Group the commits by year
     pub fn group_by_year(&self) -> Vec<(NaiveDate, GroupedCommit)> {
         let mut grouped_data: HashMap<NaiveDate, GroupedCommit> = HashMap::new();
 
         for commit in &self.commits {
-            let key = self.create_hash_key(commit, &GroupBy::Year);
+            let key = self.create_hash_key(commit, &LogGroupBy::Year);
             let entry = grouped_data.entry(key).or_default();
             let a = entry.add_commits(commit.clone());
             grouped_data.insert(key, a);
@@ -153,7 +170,7 @@ impl LogParser {
         let mut grouped_data: HashMap<NaiveDate, GroupedCommit> = HashMap::new();
 
         for commit in &self.commits {
-            let key = self.create_hash_key(commit, &GroupBy::Month);
+            let key = self.create_hash_key(commit, &LogGroupBy::Month);
             let entry = grouped_data.entry(key).or_default();
             let a = entry.add_commits(commit.clone());
             grouped_data.insert(key, a);

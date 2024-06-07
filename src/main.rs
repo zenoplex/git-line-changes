@@ -3,7 +3,7 @@ mod parser;
 mod table;
 mod utils;
 
-use crate::parser::LogParser;
+use crate::parser::{LogGroupBy, LogParser};
 use crate::table::Table;
 use clap::Parser;
 use std::io::{stdout, Write};
@@ -64,40 +64,27 @@ fn main() {
     let mut sum_deletion = 0;
     let mut sum_change_delta = 0;
 
-    let rows = match args.group {
-        GroupBy::Year => parser
-            .group_by_year()
-            .iter()
-            .map(|(date, grouped_commit)| {
-                sum_addition += grouped_commit.get_addition();
-                sum_deletion += grouped_commit.get_deletion();
-                sum_change_delta += grouped_commit.get_change_delta();
-
-                vec![
-                    date.format("%Y").to_string(),
-                    grouped_commit.get_addition().to_string(),
-                    grouped_commit.get_deletion().to_string(),
-                    grouped_commit.get_change_delta().to_string(),
-                ]
-            })
-            .collect(),
-        GroupBy::Month => parser
-            .group_by_month()
-            .iter()
-            .map(|(date, grouped_commit)| {
-                sum_addition += grouped_commit.get_addition();
-                sum_deletion += grouped_commit.get_deletion();
-                sum_change_delta += grouped_commit.get_change_delta();
-
-                vec![
-                    date.format("%Y-%m").to_string(),
-                    grouped_commit.get_addition().to_string(),
-                    grouped_commit.get_deletion().to_string(),
-                    grouped_commit.get_change_delta().to_string(),
-                ]
-            })
-            .collect(),
+    let log_group = match args.group {
+        GroupBy::Year => LogGroupBy::Year,
+        GroupBy::Month => LogGroupBy::Month,
     };
+
+    let rows = parser
+        .group_by(&log_group)
+        .iter()
+        .map(|(date, grouped_commit)| {
+            sum_addition += grouped_commit.get_addition();
+            sum_deletion += grouped_commit.get_deletion();
+            sum_change_delta += grouped_commit.get_change_delta();
+
+            vec![
+                date.format("%Y").to_string(),
+                grouped_commit.get_addition().to_string(),
+                grouped_commit.get_deletion().to_string(),
+                grouped_commit.get_change_delta().to_string(),
+            ]
+        })
+        .collect();
 
     writeln!(
         handle,
