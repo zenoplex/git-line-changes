@@ -152,3 +152,78 @@ impl LogParser {
         list
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    const STDOUT: &str =
+        "<<COMMIT>>|fc557a8860c77a7d9f762c4d64bcc7b1e9352356|2024-04-08T11:24:15+09:00
+ 1 file changed, 6 deletions(-)
+
+<<COMMIT>>|88521e6ea795fe68b7b8f0389f31c725da768511|2024-04-08T11:24:01+09:00
+ 1 file changed, 44 insertions(+)
+
+<<COMMIT>>|9ce6f7bba98296aaf20cd05e51f645e16e2ceb30|2024-04-03T22:05:08+09:00
+ 2 files changed, 6 insertions(+), 44 deletions(-)
+
+<<COMMIT>>|d69fd5b443b12f48380a1752b835222986094eb7|2024-05-02T19:02:27+09:00
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+<<COMMIT>>|a3a975eedb3fffe82a079f8ac5301c445f1a5056|2022-06-02T19:02:27+09:00
+ 1 file changed, 66 insertions(+), 2 deletions(-)
+";
+
+    #[test]
+    fn parses_stdout() {
+        let parser = LogParser::from(STDOUT);
+        assert_eq!(parser.get_commits().len(), 5);
+    }
+
+    #[test]
+    fn empty_stat_skipped() {
+        let stdout = "<<COMMIT>>|82b3ebd9502410c9d74e57a6d677041055decbfd|2024-03-12T12:06:54+09:00
+<<COMMIT>>|0bdf1fb931b852af391aa4d1e1341ef38dc7da4b|2024-03-12T11:39:19+09:00
+ 1 file changed, 72 insertions(+), 3 deletions(-)";
+        let parser = LogParser::from(stdout);
+        assert_eq!(parser.get_commits().len(), 1);
+    }
+
+    #[test]
+    fn group_by_month() {
+        let parser = LogParser::from(STDOUT);
+        let out = parser.group_by(&LogGroupBy::Month);
+        assert_eq!(out.len(), 3);
+
+        let test_cases = [
+            ((2022, 6, 30), (66, 2)),
+            ((2024, 4, 30), (50, 50)),
+            ((2024, 5, 31), (1, 1)),
+        ];
+
+        for (index, (date, (insertion, deletion))) in test_cases.iter().enumerate() {
+            let naive_date = NaiveDate::from_ymd_opt(date.0, date.1, date.2).unwrap();
+
+            assert_eq!(out[index].0, naive_date);
+            assert_eq!(out[index].1.get_addition(), *insertion);
+            assert_eq!(out[index].1.get_deletion(), *deletion);
+        }
+    }
+
+    #[test]
+    fn group_by_year() {
+        let parser = LogParser::from(STDOUT);
+        let out = parser.group_by(&LogGroupBy::Year);
+        assert_eq!(out.len(), 2);
+
+        let test_cases = [((2022, 12, 31), (66, 2)), ((2024, 12, 31), (51, 51))];
+
+        for (index, (date, (insertion, deletion))) in test_cases.iter().enumerate() {
+            let naive_date = NaiveDate::from_ymd_opt(date.0, date.1, date.2).unwrap();
+
+            assert_eq!(out[index].0, naive_date);
+            assert_eq!(out[index].1.get_addition(), *insertion);
+            assert_eq!(out[index].1.get_deletion(), *deletion);
+        }
+    }
+}
