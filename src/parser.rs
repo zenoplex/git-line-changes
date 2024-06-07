@@ -74,6 +74,9 @@ impl LogParser {
         let insertions = regex
             .insertion
             .captures(str)
+            // It's unclear from the code why capture name is used here.
+            // Intention was not to compile the Regex inside the loop so it's taken out as LogParserRegex.
+            // A simple memoization might be better?
             .and_then(|cap| cap.name("insertions")?.as_str().parse().ok())
             .unwrap_or(0);
 
