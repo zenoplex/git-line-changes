@@ -8,15 +8,15 @@ use crate::utils::{last_day_of_month, last_day_of_year};
 
 // Not sure this is the right way to do it trying to store regex
 struct LogParserRegex {
-    insertions_regex: Regex,
-    deletions_regex: Regex,
+    insertion: Regex,
+    deletion: Regex,
 }
 
 impl LogParserRegex {
     pub fn new() -> Self {
         Self {
-            insertions_regex: Regex::new(r"(?P<insertions>\d+) insertions\(\+\)").unwrap(),
-            deletions_regex: Regex::new(r"(?P<deletions>\d+) deletions\(-\)").unwrap(),
+            insertion: Regex::new(r"(?P<insertions>\d+) insertions\(\+\)").unwrap(),
+            deletion: Regex::new(r"(?P<deletions>\d+) deletions\(-\)").unwrap(),
         }
     }
 }
@@ -72,13 +72,13 @@ impl LogParser {
     /// Parse insertions and deletions from git log output
     fn parse_insertions_deletions(regex: &LogParserRegex, str: &str) -> (u32, u32) {
         let insertions = regex
-            .insertions_regex
+            .insertion
             .captures(str)
             .and_then(|cap| cap.name("insertions")?.as_str().parse().ok())
             .unwrap_or(0);
 
         let deletions = regex
-            .deletions_regex
+            .deletion
             .captures(str)
             .and_then(|cap| cap.name("deletions")?.as_str().parse().ok())
             .unwrap_or(0);
