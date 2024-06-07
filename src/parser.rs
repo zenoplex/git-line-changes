@@ -8,9 +8,9 @@ use crate::commit::{Commit, GroupedCommit};
 use crate::utils::{last_day_of_month, last_day_of_year};
 
 static INSERTION_REGEX: Lazy<Regex> =
-    Lazy::new(|| Regex::new(r"(?P<insertions>\d+) insertions\(\+\)").unwrap());
+    Lazy::new(|| Regex::new(r"(?P<insertions>\d+) insertion(s)?\(\+\)").unwrap());
 static DELETION_REGEX: Lazy<Regex> =
-    Lazy::new(|| Regex::new(r"(?P<deletions>\d+) deletions\(-\)").unwrap());
+    Lazy::new(|| Regex::new(r"(?P<deletions>\d+) deletion(s)?\(-\)").unwrap());
 
 #[derive(Debug, Clone)]
 pub enum LogGroupBy {
