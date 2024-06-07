@@ -1,6 +1,7 @@
 use std::collections::HashMap;
 
 use chrono::{Datelike, NaiveDate};
+use regex::Regex;
 
 use crate::commit::{Commit, GroupedCommit};
 use crate::utils::{last_day_of_month, last_day_of_year};
@@ -27,7 +28,7 @@ impl LogParser {
     // Format the output to be easily parsable
     // https://git-scm.com/docs/pretty-formats
     pub const GIT_LOG_ARGS: [&'static str; 3] = [
-        "--numstat",
+        "--shortstat",
         "--no-merges",
         // Adding <<COMMIT>> to separate commits since stats output can be empty which makes it hard to distinguish between commits.
         // Separating commits with \n\n does not work in some cases (ie: allow-empty commits).
@@ -41,6 +42,23 @@ impl LogParser {
             .split("<<COMMIT>>")
             .map(|s| s.trim())
             .collect::<Vec<&str>>()
+    }
+
+    /// Parse insertions and deletions from git log output
+    fn parse_insertions_deletions(str: &str) -> (u32, u32) {
+        let regex =
+            Regex::new(r"(?P<insertions>\d+) insertions\(\+\), (?P<deletions>\d+) deletions\(-\)")
+                .unwrap();
+        let Some(caps) = regex.captures(str).and_then(|cap| {
+            let insertions = cap.name("insertions")?.as_str().parse().ok()?;
+            let deletions = cap.name("deletions")?.as_str().parse().ok()?;
+
+            Some((insertions, deletions))
+        }) else {
+            return (0, 0);
+        };
+
+        caps
     }
 
     /// Parse git log output.
@@ -65,16 +83,18 @@ impl LogParser {
                 }
             };
 
-            // TODO: Rather than parsing output of --numstat, using output of --shortstat option would make below code simpler
-            let addition_deletion: (u32, u32) = lines[1..].iter().fold((0, 0), |acc, line| {
-                let stats: Vec<&str> = line.split_whitespace().collect();
-                let addition = stats[0].parse::<u32>().unwrap_or(0);
-                let deletion = stats[1].parse::<u32>().unwrap_or(0);
+            // Drop commits without stats
+            let Some(stats) = lines.get(1) else {
+                continue;
+            };
 
-                (acc.0 + addition, acc.1 + deletion)
-            });
-
-            let commit = Commit::new(hash.into(), date, addition_deletion.0, addition_deletion.1);
+            let insertions_deletions = Self::parse_insertions_deletions(stats);
+            let commit = Commit::new(
+                hash.into(),
+                date,
+                insertions_deletions.0,
+                insertions_deletions.1,
+            );
             commits.push(commit);
         }
 
