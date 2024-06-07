@@ -147,37 +147,4 @@ impl LogParser {
         list.sort_by(|a, b| a.0.cmp(&b.0));
         list
     }
-
-    // TODO: Refactor group_by_year and group_by_month to use a single function
-    /// Group the commits by year
-    pub fn group_by_year(&self) -> Vec<(NaiveDate, GroupedCommit)> {
-        let mut grouped_data: HashMap<NaiveDate, GroupedCommit> = HashMap::new();
-
-        for commit in &self.commits {
-            let key = self.create_hash_key(commit, &LogGroupBy::Year);
-            let entry = grouped_data.entry(key).or_default();
-            let a = entry.add_commits(commit.clone());
-            grouped_data.insert(key, a);
-        }
-
-        let mut list: Vec<(NaiveDate, GroupedCommit)> = grouped_data.into_iter().collect();
-        list.sort_by(|a, b| a.0.cmp(&b.0));
-        list
-    }
-
-    /// Group the commits by month
-    pub fn group_by_month(&self) -> Vec<(NaiveDate, GroupedCommit)> {
-        let mut grouped_data: HashMap<NaiveDate, GroupedCommit> = HashMap::new();
-
-        for commit in &self.commits {
-            let key = self.create_hash_key(commit, &LogGroupBy::Month);
-            let entry = grouped_data.entry(key).or_default();
-            let a = entry.add_commits(commit.clone());
-            grouped_data.insert(key, a);
-        }
-
-        let mut list: Vec<(NaiveDate, GroupedCommit)> = grouped_data.into_iter().collect();
-        list.sort_by(|a, b| a.0.cmp(&b.0));
-        list
-    }
 }
