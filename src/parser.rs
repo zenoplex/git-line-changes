@@ -6,6 +6,11 @@ use regex::Regex;
 use crate::commit::{Commit, GroupedCommit};
 use crate::utils::{last_day_of_month, last_day_of_year};
 
+enum GroupBy {
+    Year,
+    Month,
+}
+
 // TODO: Needs tests
 
 /// Immutable struct to parse git log output.
@@ -110,17 +115,32 @@ impl LogParser {
         &self.commits
     }
 
+    fn create_hash_key(&self, commit: &Commit, group: &GroupBy) -> NaiveDate {
+        match group {
+            GroupBy::Year => {
+                let date = commit.get_date();
+                let year = date.year();
+                last_day_of_year(year)
+            }
+            GroupBy::Month => {
+                let date = commit.get_date();
+                let year = date.year();
+                let month = date.month();
+                last_day_of_month(year, month)
+            }
+        }
+    }
+
     // TODO: Refactor group_by_year and group_by_month to use a single function
     /// Group the commits by year
     pub fn group_by_year(&self) -> Vec<(NaiveDate, GroupedCommit)> {
         let mut grouped_data: HashMap<NaiveDate, GroupedCommit> = HashMap::new();
 
         for commit in &self.commits {
-            let date = commit.get_date();
-            let year = date.year();
-            let entry = grouped_data.entry(last_day_of_year(year)).or_default();
+            let key = self.create_hash_key(commit, &GroupBy::Year);
+            let entry = grouped_data.entry(key).or_default();
             let a = entry.add_commits(commit.clone());
-            grouped_data.insert(last_day_of_year(year), a);
+            grouped_data.insert(key, a);
         }
 
         let mut list: Vec<(NaiveDate, GroupedCommit)> = grouped_data.into_iter().collect();
@@ -133,15 +153,10 @@ impl LogParser {
         let mut grouped_data: HashMap<NaiveDate, GroupedCommit> = HashMap::new();
 
         for commit in &self.commits {
-            let date = commit.get_date();
-            let year = date.year();
-            let month = date.month();
-            let entry = grouped_data
-                .entry(last_day_of_month(year, month))
-                .or_default();
-
+            let key = self.create_hash_key(commit, &GroupBy::Month);
+            let entry = grouped_data.entry(key).or_default();
             let a = entry.add_commits(commit.clone());
-            grouped_data.insert(last_day_of_month(year, month), a);
+            grouped_data.insert(key, a);
         }
 
         let mut list: Vec<(NaiveDate, GroupedCommit)> = grouped_data.into_iter().collect();
