@@ -58,12 +58,7 @@ fn main() {
 
     let output = log.output().expect("Failed to execute git log command");
     let stdout = String::from_utf8(output.stdout).expect("Invalid UTF-8");
-    // TODO: Should move this into LogParser struct
-    let commits = stdout
-        .split("<<COMMIT>>")
-        .map(|s| s.trim())
-        .collect::<Vec<&str>>();
-    let parser = LogParser::from(&commits);
+    let parser = LogParser::from(stdout.as_str());
 
     let mut sum_addition = 0;
     let mut sum_deletion = 0;
@@ -107,7 +102,7 @@ fn main() {
     writeln!(
         handle,
         "Found total of {} commits by {}\n",
-        &commits.len(),
+        &parser.get_commits().len(),
         &args.author
     )
     .unwrap();

@@ -12,10 +12,10 @@ pub struct LogParser {
     commits: Vec<Commit>,
 }
 
-impl From<&Vec<&str>> for LogParser {
-    fn from(str: &Vec<&str>) -> Self {
-        let parser = LogParser::new();
-        let commits = parser._parse(str);
+impl From<&str> for LogParser {
+    fn from(str: &str) -> Self {
+        let raw_commits = LogParser::split_stdout_to_commits(str);
+        let commits = LogParser::parse(&raw_commits);
         LogParser { commits }
     }
 }
@@ -31,18 +31,20 @@ impl LogParser {
         "--pretty=format:<<COMMIT>>|%H|%aI",
     ];
 
-    pub fn new() -> LogParser {
-        LogParser {
-            commits: Vec::new(),
-        }
+    fn split_stdout_to_commits(stdout: &str) -> Vec<&str> {
+        // TODO: Make <<COMMIT>> a constant
+        stdout
+            .split("<<COMMIT>>")
+            .map(|s| s.trim())
+            .collect::<Vec<&str>>()
     }
 
     /// Parse git log output.
     /// git log needs to be outputted with the specific format.
-    fn _parse(&self, orig_commits: &Vec<&str>) -> Vec<Commit> {
+    fn parse(raw_commits: &Vec<&str>) -> Vec<Commit> {
         let mut commits: Vec<Commit> = Vec::new();
 
-        for commit in orig_commits {
+        for commit in raw_commits {
             let lines: Vec<&str> = commit.lines().collect();
             if lines.is_empty() {
                 continue;
@@ -75,11 +77,8 @@ impl LogParser {
         commits
     }
 
-    /// Parse the commits and returns a new Commits struct
-    #[allow(dead_code)]
-    pub fn parse(&self, orig_commits: &Vec<&str>) -> Self {
-        let commits = self._parse(orig_commits);
-        LogParser { commits }
+    pub fn get_commits(&self) -> &Vec<Commit> {
+        &self.commits
     }
 
     /// Group the commits by year
