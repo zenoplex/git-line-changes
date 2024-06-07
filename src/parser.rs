@@ -6,6 +6,21 @@ use regex::Regex;
 use crate::commit::{Commit, GroupedCommit};
 use crate::utils::{last_day_of_month, last_day_of_year};
 
+// Not sure this is the right way to do it trying to store regex
+struct LogParserRegex {
+    insertions_regex: Regex,
+    deletions_regex: Regex,
+}
+
+impl LogParserRegex {
+    pub fn new() -> Self {
+        Self {
+            insertions_regex: Regex::new(r"(?P<insertions>\d+) insertions\(\+\)").unwrap(),
+            deletions_regex: Regex::new(r"(?P<deletions>\d+) deletions\(-\)").unwrap(),
+        }
+    }
+}
+
 #[derive(Debug, Clone)]
 pub enum LogGroupBy {
     Year,
@@ -55,26 +70,27 @@ impl LogParser {
     }
 
     /// Parse insertions and deletions from git log output
-    fn parse_insertions_deletions(str: &str) -> (u32, u32) {
-        let regex =
-            Regex::new(r"(?P<insertions>\d+) insertions\(\+\), (?P<deletions>\d+) deletions\(-\)")
-                .unwrap();
-        let Some(caps) = regex.captures(str).and_then(|cap| {
-            let insertions = cap.name("insertions")?.as_str().parse().ok()?;
-            let deletions = cap.name("deletions")?.as_str().parse().ok()?;
+    fn parse_insertions_deletions(regex: &LogParserRegex, str: &str) -> (u32, u32) {
+        let insertions = regex
+            .insertions_regex
+            .captures(str)
+            .and_then(|cap| cap.name("insertions")?.as_str().parse().ok())
+            .unwrap_or(0);
 
-            Some((insertions, deletions))
-        }) else {
-            return (0, 0);
-        };
+        let deletions = regex
+            .deletions_regex
+            .captures(str)
+            .and_then(|cap| cap.name("deletions")?.as_str().parse().ok())
+            .unwrap_or(0);
 
-        caps
+        (insertions, deletions)
     }
 
     /// Parse git log output.
     /// git log needs to be outputted with the specific format.
     fn parse(raw_commits: &Vec<&str>) -> Vec<Commit> {
         let mut commits: Vec<Commit> = Vec::new();
+        let regex = LogParserRegex::new();
 
         for commit in raw_commits {
             let lines: Vec<&str> = commit.lines().collect();
@@ -98,7 +114,7 @@ impl LogParser {
                 continue;
             };
 
-            let insertions_deletions = Self::parse_insertions_deletions(stats);
+            let insertions_deletions = Self::parse_insertions_deletions(&regex, stats);
             let commit = Commit::new(
                 hash.into(),
                 date,
