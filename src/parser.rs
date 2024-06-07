@@ -25,21 +25,25 @@ impl From<&str> for LogParser {
 }
 
 impl LogParser {
-    // Format the output to be easily parsable
-    // https://git-scm.com/docs/pretty-formats
-    pub const GIT_LOG_ARGS: [&'static str; 3] = [
-        "--shortstat",
-        "--no-merges",
-        // Adding <<COMMIT>> to separate commits since stats output can be empty which makes it hard to distinguish between commits.
-        // Separating commits with \n\n does not work in some cases (ie: allow-empty commits).
-        "--pretty=format:<<COMMIT>>|%H|%aI",
-    ];
+    const COMMIT_SEPARATOR: &'static str = "<<COMMIT>>";
+
+    /// Get git log arguments.
+    /// This is required to make git log parsable.
+    pub fn get_git_log_args() -> [String; 3] {
+        [
+            "--shortstat".to_string(),
+            "--no-merges".to_string(),
+            // Adding <<COMMIT>> to separate commits since stats output can be empty which makes it hard to distinguish between commits.
+            // Separating commits with \n\n does not work in some cases (ie: allow-empty commits).
+            // https://git-scm.com/docs/pretty-formats
+            format!("--pretty=format:{}|%H|%aI", Self::COMMIT_SEPARATOR),
+        ]
+    }
 
     /// Split stdout to collections of commits
     fn split_stdout_to_commits(stdout: &str) -> Vec<&str> {
-        // TODO: Make <<COMMIT>> a constant
         stdout
-            .split("<<COMMIT>>")
+            .split(Self::COMMIT_SEPARATOR)
             .map(|s| s.trim())
             .collect::<Vec<&str>>()
     }

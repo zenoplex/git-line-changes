@@ -46,7 +46,7 @@ fn main() {
     let args = Args::parse();
     let mut log = Command::new("git");
     log.arg("log")
-        .args(LogParser::GIT_LOG_ARGS)
+        .args(LogParser::get_git_log_args())
         .args(["--author", &args.author]);
 
     if let Some(after) = &args.after {
