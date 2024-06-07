@@ -7,14 +7,17 @@ use crate::utils::{last_day_of_month, last_day_of_year};
 
 // TODO: Needs tests
 
+/// Immutable struct to parse git log output.
 #[derive(Debug, Default)]
 pub struct LogParser {
+    /// List of commits.
     commits: Vec<Commit>,
 }
 
+/// Parse git log output and return instance
 impl From<&str> for LogParser {
-    fn from(str: &str) -> Self {
-        let raw_commits = LogParser::split_stdout_to_commits(str);
+    fn from(stdout: &str) -> Self {
+        let raw_commits = LogParser::split_stdout_to_commits(stdout);
         let commits = LogParser::parse(&raw_commits);
         LogParser { commits }
     }
@@ -31,6 +34,7 @@ impl LogParser {
         "--pretty=format:<<COMMIT>>|%H|%aI",
     ];
 
+    /// Split stdout to collections of commits
     fn split_stdout_to_commits(stdout: &str) -> Vec<&str> {
         // TODO: Make <<COMMIT>> a constant
         stdout
@@ -77,10 +81,12 @@ impl LogParser {
         commits
     }
 
+    /// Get the list of commits
     pub fn get_commits(&self) -> &Vec<Commit> {
         &self.commits
     }
 
+    // TODO: Refactor group_by_year and group_by_month to use a single function
     /// Group the commits by year
     pub fn group_by_year(&self) -> Vec<(NaiveDate, GroupedCommit)> {
         let mut grouped_data: HashMap<NaiveDate, GroupedCommit> = HashMap::new();
