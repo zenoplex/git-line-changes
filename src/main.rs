@@ -60,7 +60,7 @@ fn main() {
     let stdout = String::from_utf8(output.stdout).expect("Invalid UTF-8");
     let parser = LogParser::from(stdout.as_str());
 
-    let mut sum_addition = 0;
+    let mut sum_insertion = 0;
     let mut sum_deletion = 0;
     let mut sum_change_delta = 0;
 
@@ -73,13 +73,13 @@ fn main() {
         .group_by(&log_group)
         .iter()
         .map(|(date, grouped_commit)| {
-            sum_addition += grouped_commit.get_addition();
+            sum_insertion += grouped_commit.get_insertion();
             sum_deletion += grouped_commit.get_deletion();
             sum_change_delta += grouped_commit.get_change_delta();
 
             vec![
                 date.format("%Y").to_string(),
-                grouped_commit.get_addition().to_string(),
+                grouped_commit.get_insertion().to_string(),
                 grouped_commit.get_deletion().to_string(),
                 grouped_commit.get_change_delta().to_string(),
             ]
@@ -97,7 +97,7 @@ fn main() {
     let table = Table::new(
         vec![
             "Date".to_string(),
-            "Addition".to_string(),
+            "Insertion".to_string(),
             "Deletion".to_string(),
             "Change Delta".to_string(),
         ],
@@ -108,7 +108,7 @@ fn main() {
     writeln!(
         handle,
         "sum {:?} {:?} {:?}",
-        sum_addition, sum_deletion, sum_change_delta,
+        sum_insertion, sum_deletion, sum_change_delta,
     )
     .unwrap();
 }

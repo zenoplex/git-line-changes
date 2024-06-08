@@ -203,7 +203,7 @@ mod tests {
             let naive_date = NaiveDate::from_ymd_opt(date.0, date.1, date.2).unwrap();
 
             assert_eq!(out[index].0, naive_date);
-            assert_eq!(out[index].1.get_addition(), *insertion);
+            assert_eq!(out[index].1.get_insertion(), *insertion);
             assert_eq!(out[index].1.get_deletion(), *deletion);
         }
     }
@@ -220,7 +220,7 @@ mod tests {
             let naive_date = NaiveDate::from_ymd_opt(date.0, date.1, date.2).unwrap();
 
             assert_eq!(out[index].0, naive_date);
-            assert_eq!(out[index].1.get_addition(), *insertion);
+            assert_eq!(out[index].1.get_insertion(), *insertion);
             assert_eq!(out[index].1.get_deletion(), *deletion);
         }
     }

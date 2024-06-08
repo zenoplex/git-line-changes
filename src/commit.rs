@@ -6,19 +6,19 @@ pub struct Commit {
     hash: String,
     date: NaiveDate,
     // TODO: Try readonly crate
-    addition: u32,
+    insertion: u32,
     deletion: u32,
     change_delta: i32,
 }
 
 impl Commit {
-    pub fn new(hash: String, date: NaiveDate, addition: u32, deletion: u32) -> Commit {
+    pub fn new(hash: String, date: NaiveDate, insertion: u32, deletion: u32) -> Commit {
         Commit {
             hash,
             date,
-            addition,
+            insertion,
             deletion,
-            change_delta: addition as i32 - deletion as i32,
+            change_delta: insertion as i32 - deletion as i32,
         }
     }
 
@@ -26,8 +26,8 @@ impl Commit {
         self.date
     }
 
-    pub fn get_addition(&self) -> u32 {
-        self.addition
+    pub fn get_insertion(&self) -> u32 {
+        self.insertion
     }
 
     pub fn get_deletion(&self) -> u32 {
@@ -42,18 +42,18 @@ impl Commit {
 #[derive(Debug, Default)]
 pub struct GroupedCommit {
     commits: Vec<Commit>,
-    addition: u32,
+    insertion: u32,
     deletion: u32,
     change_delta: i32,
 }
 
 impl GroupedCommit {
     pub fn new(commits: Vec<Commit>) -> GroupedCommit {
-        let (addition, deletion, change_delta) = &commits.iter().fold(
+        let (insertion, deletion, change_delta) = &commits.iter().fold(
             (0, 0, 0),
-            |(acc_addition, acc_deletion, acc_change_delta), commit| {
+            |(acc_insertion, acc_deletion, acc_change_delta), commit| {
                 (
-                    acc_addition + commit.get_addition(),
+                    acc_insertion + commit.get_insertion(),
                     acc_deletion + commit.get_deletion(),
                     acc_change_delta + commit.get_change_delta(),
                 )
@@ -62,14 +62,14 @@ impl GroupedCommit {
 
         GroupedCommit {
             commits,
-            addition: *addition,
+            insertion: *insertion,
             deletion: *deletion,
             change_delta: *change_delta,
         }
     }
 
-    pub fn get_addition(&self) -> u32 {
-        self.addition
+    pub fn get_insertion(&self) -> u32 {
+        self.insertion
     }
 
     pub fn get_deletion(&self) -> u32 {
