@@ -33,42 +33,25 @@ impl StateAccess for Commit {
 #[derive(Debug, Default)]
 pub struct GroupedCommit {
     commits: Vec<Commit>,
-    insertion: u32,
-    deletion: u32,
-    change_delta: i32,
+    stat: Stat,
 }
 
 impl GroupedCommit {
     pub fn new(commits: Vec<Commit>) -> GroupedCommit {
-        let (insertion, deletion, change_delta) = &commits.iter().fold(
-            (0, 0, 0),
-            |(acc_insertion, acc_deletion, acc_change_delta), commit| {
-                (
-                    acc_insertion + commit.get_insertion(),
-                    acc_deletion + commit.get_deletion(),
-                    acc_change_delta + commit.get_change_delta(),
-                )
-            },
-        );
+        let (insertion, deletion) =
+            &commits
+                .iter()
+                .fold((0, 0), |(acc_insertion, acc_deletion), commit| {
+                    (
+                        acc_insertion + commit.get_insertion(),
+                        acc_deletion + commit.get_deletion(),
+                    )
+                });
 
         GroupedCommit {
             commits,
-            insertion: *insertion,
-            deletion: *deletion,
-            change_delta: *change_delta,
+            stat: Stat::new(*insertion, *deletion),
         }
-    }
-
-    pub fn get_insertion(&self) -> u32 {
-        self.insertion
-    }
-
-    pub fn get_deletion(&self) -> u32 {
-        self.deletion
-    }
-
-    pub fn get_change_delta(&self) -> i32 {
-        self.change_delta
     }
 
     pub fn add_commits(&mut self, commit: Commit) -> Self {
@@ -76,5 +59,11 @@ impl GroupedCommit {
         commits.push(commit);
 
         GroupedCommit::new(commits)
+    }
+}
+
+impl StateAccess for GroupedCommit {
+    fn get_stat(&self) -> &Stat {
+        &self.stat
     }
 }

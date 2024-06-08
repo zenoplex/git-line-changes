@@ -7,6 +7,7 @@ mod utils;
 use crate::parser::{LogGroupBy, LogParser};
 use crate::table::Table;
 use clap::Parser;
+use stat::StateAccess;
 use std::io::{stdout, Write};
 use std::process::Command;
 
