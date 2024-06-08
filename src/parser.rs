@@ -23,14 +23,22 @@ pub enum LogGroupBy {
 pub struct LogParser {
     /// List of commits.
     commits: Vec<Commit>,
+    insertion: u32,
+    deletion: u32,
+    change_delta: i32,
 }
 
 /// Parse git log output and return instance
 impl From<&str> for LogParser {
     fn from(stdout: &str) -> Self {
         let raw_commits = LogParser::split_stdout_to_commits(stdout);
-        let commits = LogParser::parse(&raw_commits);
-        LogParser { commits }
+        let (commits, insertion, deletion, change_delta) = LogParser::parse(&raw_commits);
+        LogParser {
+            commits,
+            insertion,
+            deletion,
+            change_delta,
+        }
     }
 }
 
@@ -75,8 +83,11 @@ impl LogParser {
 
     /// Parse git log output.
     /// git log needs to be outputted with the specific format.
-    fn parse(raw_commits: &Vec<&str>) -> Vec<Commit> {
+    fn parse(raw_commits: &Vec<&str>) -> (Vec<Commit>, u32, u32, i32) {
         let mut commits: Vec<Commit> = Vec::new();
+        let mut total_insertion: u32 = 0;
+        let mut total_deletion: u32 = 0;
+        let mut total_change_delta: i32 = 0;
 
         for commit in raw_commits {
             let lines: Vec<&str> = commit.lines().collect();
@@ -107,10 +118,13 @@ impl LogParser {
                 insertions_deletions.0,
                 insertions_deletions.1,
             );
+            total_insertion += commit.get_insertion();
+            total_deletion += commit.get_deletion();
+            total_change_delta += commit.get_change_delta();
             commits.push(commit);
         }
 
-        commits
+        (commits, total_insertion, total_deletion, total_change_delta)
     }
 
     /// Get the list of commits
@@ -148,6 +162,18 @@ impl LogParser {
         let mut list: Vec<(NaiveDate, GroupedCommit)> = grouped_data.into_iter().collect();
         list.sort_by(|a, b| a.0.cmp(&b.0));
         list
+    }
+
+    pub fn get_insertion(&self) -> u32 {
+        self.insertion
+    }
+
+    pub fn get_deletion(&self) -> u32 {
+        self.deletion
+    }
+
+    pub fn get_change_delta(&self) -> i32 {
+        self.change_delta
     }
 }
 
@@ -223,5 +249,23 @@ mod tests {
             assert_eq!(out[index].1.get_insertion(), *insertion);
             assert_eq!(out[index].1.get_deletion(), *deletion);
         }
+    }
+
+    #[test]
+    fn get_insertion() {
+        let parser = LogParser::from(STDOUT);
+        assert_eq!(parser.get_insertion(), 117);
+    }
+
+    #[test]
+    fn get_deletion() {
+        let parser = LogParser::from(STDOUT);
+        assert_eq!(parser.get_deletion(), 53);
+    }
+
+    #[test]
+    fn get_change_delta() {
+        let parser = LogParser::from(STDOUT);
+        assert_eq!(parser.get_change_delta(), 64);
     }
 }
