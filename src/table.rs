@@ -4,11 +4,16 @@ use std::io::{stdout, BufWriter, Write};
 pub struct Table {
     headers: Vec<String>,
     rows: Vec<Vec<String>>,
+    footers: Vec<String>,
 }
 
 impl Table {
-    pub fn new(headers: Vec<String>, rows: Vec<Vec<String>>) -> Table {
-        Table { headers, rows }
+    pub fn new(headers: Vec<String>, rows: Vec<Vec<String>>, footers: Vec<String>) -> Table {
+        Table {
+            headers,
+            rows,
+            footers,
+        }
     }
 
     fn column_widths(&self) -> Vec<usize> {
@@ -25,6 +30,12 @@ impl Table {
                 if cell.len() > widths[i] {
                     widths[i] = cell.len();
                 }
+            }
+        }
+
+        for (i, footer) in self.footers.iter().enumerate() {
+            if footer.len() > widths[i] {
+                widths[i] = footer.len();
             }
         }
 
@@ -55,5 +66,17 @@ impl Table {
             }
             writeln!(handle).unwrap();
         }
+
+        for width in &widths {
+            write!(handle, "{:-<width$} ", "-", width = width).unwrap();
+        }
+
+        writeln!(handle).unwrap();
+
+        for (i, footer) in self.footers.iter().enumerate() {
+            write!(handle, "{:width$} ", footer, width = widths[i]).unwrap();
+        }
+
+        writeln!(handle).unwrap();
     }
 }

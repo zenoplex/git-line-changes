@@ -96,15 +96,12 @@ fn main() {
             "Change Delta".to_string(),
         ],
         rows,
+        vec![
+            "Total".to_string(),
+            parser.get_insertion().to_string(),
+            parser.get_deletion().to_string(),
+            parser.get_change_delta().to_string(),
+        ],
     );
     table.render();
-
-    writeln!(
-        handle,
-        "sum {:?} {:?} {:?}",
-        &parser.get_insertion(),
-        &parser.get_deletion(),
-        &parser.get_change_delta(),
-    )
-    .unwrap();
 }
