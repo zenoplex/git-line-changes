@@ -5,6 +5,7 @@ use once_cell::sync::Lazy;
 use regex::Regex;
 
 use crate::commit::{Commit, GroupedCommit};
+use crate::stat::StateAccess;
 use crate::utils::{last_day_of_month, last_day_of_year};
 
 static INSERTION_REGEX: Lazy<Regex> =

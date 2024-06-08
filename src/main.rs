@@ -1,5 +1,6 @@
 mod commit;
 mod parser;
+mod stat;
 mod table;
 mod utils;
 

@@ -1,14 +1,13 @@
 use chrono::NaiveDate;
 
+use crate::stat::{Stat, StateAccess};
+
 #[derive(Debug, Clone)]
 pub struct Commit {
     // TODO: SHA1 hash is 40 characters long
     hash: String,
     date: NaiveDate,
-    // TODO: Try readonly crate
-    insertion: u32,
-    deletion: u32,
-    change_delta: i32,
+    stat: Stat,
 }
 
 impl Commit {
@@ -16,26 +15,18 @@ impl Commit {
         Commit {
             hash,
             date,
-            insertion,
-            deletion,
-            change_delta: insertion as i32 - deletion as i32,
+            stat: Stat::new(insertion, deletion),
         }
     }
 
     pub fn get_date(&self) -> NaiveDate {
         self.date
     }
+}
 
-    pub fn get_insertion(&self) -> u32 {
-        self.insertion
-    }
-
-    pub fn get_deletion(&self) -> u32 {
-        self.deletion
-    }
-
-    pub fn get_change_delta(&self) -> i32 {
-        self.change_delta
+impl StateAccess for Commit {
+    fn get_stat(&self) -> &Stat {
+        &self.stat
     }
 }
 
