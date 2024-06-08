@@ -5,7 +5,7 @@ use once_cell::sync::Lazy;
 use regex::Regex;
 
 use crate::commit::{Commit, GroupedCommit};
-use crate::stat::StateAccess;
+use crate::stat::{Stat, StateAccess};
 use crate::utils::{last_day_of_month, last_day_of_year};
 
 static INSERTION_REGEX: Lazy<Regex> =
@@ -24,21 +24,17 @@ pub enum LogGroupBy {
 pub struct LogParser {
     /// List of commits.
     commits: Vec<Commit>,
-    insertion: u32,
-    deletion: u32,
-    change_delta: i32,
+    stat: Stat,
 }
 
 /// Parse git log output and return instance
 impl From<&str> for LogParser {
     fn from(stdout: &str) -> Self {
         let raw_commits = LogParser::split_stdout_to_commits(stdout);
-        let (commits, insertion, deletion, change_delta) = LogParser::parse(&raw_commits);
+        let (commits, insertion, deletion) = LogParser::parse(&raw_commits);
         LogParser {
             commits,
-            insertion,
-            deletion,
-            change_delta,
+            stat: Stat::new(insertion, deletion),
         }
     }
 }
@@ -84,11 +80,10 @@ impl LogParser {
 
     /// Parse git log output.
     /// git log needs to be outputted with the specific format.
-    fn parse(raw_commits: &Vec<&str>) -> (Vec<Commit>, u32, u32, i32) {
+    fn parse(raw_commits: &Vec<&str>) -> (Vec<Commit>, u32, u32) {
         let mut commits: Vec<Commit> = Vec::new();
         let mut total_insertion: u32 = 0;
         let mut total_deletion: u32 = 0;
-        let mut total_change_delta: i32 = 0;
 
         for commit in raw_commits {
             let lines: Vec<&str> = commit.lines().collect();
@@ -121,11 +116,10 @@ impl LogParser {
             );
             total_insertion += commit.get_insertion();
             total_deletion += commit.get_deletion();
-            total_change_delta += commit.get_change_delta();
             commits.push(commit);
         }
 
-        (commits, total_insertion, total_deletion, total_change_delta)
+        (commits, total_insertion, total_deletion)
     }
 
     /// Get the list of commits
@@ -164,17 +158,11 @@ impl LogParser {
         list.sort_by(|a, b| a.0.cmp(&b.0));
         list
     }
+}
 
-    pub fn get_insertion(&self) -> u32 {
-        self.insertion
-    }
-
-    pub fn get_deletion(&self) -> u32 {
-        self.deletion
-    }
-
-    pub fn get_change_delta(&self) -> i32 {
-        self.change_delta
+impl StateAccess for LogParser {
+    fn get_stat(&self) -> &Stat {
+        &self.stat
     }
 }
 
