@@ -18,8 +18,6 @@ pub enum LogGroupBy {
     Month,
 }
 
-// TODO: Needs tests
-
 /// Immutable struct to parse git log output.
 #[derive(Debug, Default)]
 pub struct LogParser {
