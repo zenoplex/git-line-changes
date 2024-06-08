@@ -1,0 +1,12 @@
+version: 2.1
+
+orbs:
+  rust: circleci/rust@1.6.1
+
+jobs:
+
+workflows:
+  production:
+    jobs:
+      - rust/lint-test-build:
+          release: true
