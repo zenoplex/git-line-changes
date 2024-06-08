@@ -60,11 +60,7 @@ fn main() {
     let stdout = String::from_utf8(output.stdout).expect("Invalid UTF-8");
     let parser = LogParser::from(stdout.as_str());
 
-    let mut sum_insertion = 0;
-    let mut sum_deletion = 0;
-    let mut sum_change_delta = 0;
-
-    let log_group = match args.group {
+    let log_group = match &args.group {
         GroupBy::Year => LogGroupBy::Year,
         GroupBy::Month => LogGroupBy::Month,
     };
@@ -73,10 +69,6 @@ fn main() {
         .group_by(&log_group)
         .iter()
         .map(|(date, grouped_commit)| {
-            sum_insertion += grouped_commit.get_insertion();
-            sum_deletion += grouped_commit.get_deletion();
-            sum_change_delta += grouped_commit.get_change_delta();
-
             vec![
                 date.format("%Y").to_string(),
                 grouped_commit.get_insertion().to_string(),
@@ -108,7 +100,9 @@ fn main() {
     writeln!(
         handle,
         "sum {:?} {:?} {:?}",
-        sum_insertion, sum_deletion, sum_change_delta,
+        &parser.get_insertion(),
+        &parser.get_deletion(),
+        &parser.get_change_delta(),
     )
     .unwrap();
 }
