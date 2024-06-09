@@ -17,7 +17,7 @@ Merge and empty commits are ignored. See `--help` for available options.
 
 ### Built With
 
-- [![Godot][Rust-shield]][Rust]
+- [![Rust][Rust-shield]][Rust]
 
 ## Getting Started
 
