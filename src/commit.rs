@@ -5,6 +5,7 @@ use crate::stat::{Stat, StateAccess};
 #[derive(Debug, Clone)]
 pub struct Commit {
     // TODO: SHA1 hash is 40 characters long
+    #[allow(dead_code)]
     hash: String,
     date: NaiveDate,
     stat: Stat,
