@@ -44,17 +44,17 @@ mod tests {
     use super::*;
 
     #[test]
-    fn test_get_insertion() {
+    fn get_insertion() {
         assert_eq!(Stat::new(10, 5).get_insertion(), 10);
     }
 
     #[test]
-    fn test_get_deletion() {
+    fn get_deletion() {
         assert_eq!(Stat::new(10, 5).get_deletion(), 5);
     }
 
     #[test]
-    fn test_get_change_delta() {
+    fn get_change_delta() {
         let test_cases = [((10, 5), 5), ((0, 0), 0), ((5, 10), -5)];
 
         for &((insertion, deletion), expected_delta) in &test_cases {
