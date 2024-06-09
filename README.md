@@ -1,0 +1,51 @@
+<a name="top"></a>
+
+<div align="center">
+  <h3 align="center">git-line-changes</h3>
+
+  <p align="center">
+    Cli tool to output line changes made by specified author.
+  </p>
+</div>
+
+## About The Project
+
+![Project Screen Shot][project-screenshot]
+
+Shows line of changes made in a current repo.
+Merge and empty commits are ignored. See `--help` for available options.
+
+### Built With
+
+- [![Godot][Rust-shield]][Rust]
+
+## Getting Started
+
+Below is instructions on setting up your project locally on MacOS.
+To get a local copy up and running follow these simple steps.
+
+### Prerequisites
+
+- Install rust via [rustup](https://www.rust-lang.org/tools/install)
+
+### Installation
+
+1. TBD
+
+## Roadmap
+
+- [x] Add base functionality
+- [ ] Add error handling
+- [ ] Add release flow
+- [ ] (Maybe) Add custom template
+
+## License
+
+Distributed under the MIT License.
+
+<p align="right"><a href="#top">↑ Back to top</a></p>
+
+[project-screenshot]: ./screenshot.jpg
+[Rust]: https://www.rust-lang.org
+[Rust-shield]: https://img.shields.io/badge/Rust-v1.78.0-%23F46623?logo=rust&logoColor=black
+[Rust-install]: https://www.rust-lang.org/tools/install
