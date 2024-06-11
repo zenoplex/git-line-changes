@@ -71,8 +71,13 @@ fn main() {
         .group_by(&log_group)
         .iter()
         .map(|(date, grouped_commit)| {
+            let formatted_date = match &log_group {
+                LogGroupBy::Year => date.format("%Y"),
+                LogGroupBy::Month => date.format("%Y-%m"),
+            };
+
             vec![
-                date.format("%Y").to_string(),
+                formatted_date.to_string(),
                 grouped_commit.get_insertion().to_string(),
                 grouped_commit.get_deletion().to_string(),
                 grouped_commit.get_change_delta().to_string(),

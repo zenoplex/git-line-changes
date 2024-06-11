@@ -45,7 +45,7 @@ Distributed under the MIT License.
 
 <p align="right"><a href="#top">↑ Back to top</a></p>
 
-[project-screenshot]: ./screenshot.jpg
+[project-screenshot]: ./screenshot.png
 [Rust]: https://www.rust-lang.org
 [Rust-shield]: https://img.shields.io/badge/Rust-v1.78.0-%23F46623?logo=rust&logoColor=black
 [Rust-install]: https://www.rust-lang.org/tools/install
