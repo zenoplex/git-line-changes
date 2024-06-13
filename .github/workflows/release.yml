@@ -2,8 +2,9 @@ name: Release
 
 on:
   push:
+    # Match semantic versioning tags.
     tags:
-      - "v*.*.*"
+      - "[0-9]+.[0-9]+.[0-9]+"
   # Allow manually trigger.
   workflow_dispatch:
     inputs:
