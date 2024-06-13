@@ -30,7 +30,9 @@ To get a local copy up and running follow these simple steps.
 
 ### Installation
 
-1. TBD
+Download from [Releases](https://github.com/zenoplex/git-line-changes/releases).
+
+Maybe support Homebrew in future.
 
 ## Roadmap
 
